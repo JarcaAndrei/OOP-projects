@@ -1,0 +1,276 @@
+#include <iostream>
+using namespace std;
+class Avocat
+{
+	protected:
+		int cod;
+		string nume;
+		int nr_procese;
+		int *vector_procese;
+	public:
+	    virtual ~Avocat(){
+    delete []vector_procese;}
+        Avocat(const Avocat& A):cod(A.cod),nume(A.nume),nr_procese(A.nr_procese){
+            vector_procese=new int[A.nr_procese];
+            for(int i=0;i<A.nr_procese;i++)
+                vector_procese[i]=A.vector_procese[i];
+        }
+	    Avocat(){cod=0;nume="";nr_procese=0;vector_procese=new int[0];}
+		Avocat(int i, string j, int k, int *l):cod(i),nume(j),nr_procese(k){
+            vector_procese=new int[k];
+            for(int i=0;i<k;i++)
+                vector_procese[i]=l[i];
+		}
+
+
+		friend ostream& operator<<(ostream&,const Avocat&);
+		friend istream& operator>>(istream&,Avocat&);
+        Avocat& operator=(const Avocat& p)
+        {
+            cod=p.cod;
+            nume=p.nume;
+            nr_procese=p.nr_procese;
+            vector_procese=p.vector_procese;
+            return *this;
+        }
+        friend bool operator> (const Avocat &a1, const Avocat&a2);
+        friend bool operator>= (const Avocat &a1, const Avocat&a2);
+        friend bool operator< (const Avocat &a1, const Avocat&a2);
+        friend bool operator<= (const Avocat &a1, const Avocat&a2);
+
+
+        virtual void afis()
+        {
+            if (nume!="") cout<<"Nume: "<<nume<<endl;
+            cout<<"Cod: "<<cod<<endl;
+            cout<<"Numar de procese: "<<nr_procese<<endl;
+            cout<<"Suma pe fiecare proces: ";
+            for(int i=0;i<nr_procese;i++)
+            {
+                cout<<vector_procese[i]<<" ";
+            }
+            cout<<endl;
+        }
+
+};
+
+bool operator> (const Avocat &a1, const Avocat&a2)
+{
+    return a1.nr_procese>a2.nr_procese;
+}
+bool operator>= (const Avocat &a1, const Avocat&a2)
+{
+    return a1.nr_procese>=a2.nr_procese;
+}
+bool operator< (const Avocat &a1, const Avocat&a2)
+{
+    return a1.nr_procese<a2.nr_procese;
+}
+bool operator<= (const Avocat &a1, const Avocat&a2)
+{
+    return a1.nr_procese<=a2.nr_procese;
+}
+ostream& operator<<(ostream& os,const Avocat &a)
+{
+    os<<"Codul:"<<a.cod<<"\nNumele:"<<a.nume<<"\nNumarul de procese:"<<a.nr_procese<<endl;
+    os<<"Suma la procese:";
+    for(int i=0;i<a.nr_procese;i++)
+    {
+        os<<a.vector_procese[i]<<" ";
+    }
+    os<<endl;
+    return os;
+}
+istream& operator>>(istream& is, Avocat &a)
+{
+    cout<<"Cod:";
+    is>>a.cod;
+    cout<<"Nume:";
+    is>>a.nume;
+    cout<<"Numar de procese:";
+    is>>a.nr_procese;
+    a.vector_procese=new int[a.nr_procese];
+    cout<<"Suma obtinuta pe procese:";
+    for(int i=0;i<a.nr_procese;i++)
+    {
+        is>>a.vector_procese[i];
+    }
+    return is;
+}
+
+class Avocat_Oficiu: public Avocat
+{
+    static int maxim;
+	string nume_client;
+	int durata;
+	public:
+	    ~Avocat_Oficiu(){}
+	    Avocat_Oficiu(){}
+		Avocat_Oficiu(int a, string b, int k, int *l,string i, int j):Avocat(a,b,k,l),nume_client(i),durata(j){}
+        Avocat_Oficiu(const Avocat &a,string i, int j):Avocat(a),nume_client(i),durata(j){}
+        Avocat_Oficiu(const Avocat_Oficiu & p):Avocat(p)
+        {
+            nume_client=p.nume_client;
+            durata=p.durata;
+        }
+        Avocat_Oficiu& operator=(const Avocat_Oficiu& p)
+        {
+            (Avocat&)(*this)=p;
+            nume_client=p.nume_client;
+            durata=p.durata;
+            return *this;
+        }
+        void afis()
+        {
+            //((Avocat_Oficiu*)(this))->afis();
+            Avocat::afis();
+            cout<<"Nume: "<<nume_client<<endl;
+            cout<<"Durata: "<<durata<<endl;
+        }
+        void maximq(Avocat **oficiu, int n, bool*)const;
+
+        friend istream& operator>>(istream&, Avocat_Oficiu&);
+        static int afis_maxim(){ return maxim;}
+};
+istream& operator>>(istream& in, Avocat_Oficiu& M)
+{
+    in>>(Avocat&)M;
+    cout<<"Nume:";
+    in>>M.nume_client;
+    cout<<"Durata:";
+    in>>M.durata;
+    return in;
+}
+void Avocat_Oficiu::maximq(Avocat **oficiu,int n, bool *t)const
+{
+    int m=0;
+    int ind=0;
+    for(int i=0;i<n;i++)
+    {
+        if(t[i]==1)
+        {
+            Avocat_Oficiu *of=(Avocat_Oficiu*)&*oficiu[i];
+            int k=of->durata;
+            if(k>m)
+            {
+                maxim=i;
+                m=k;
+            }
+        }
+    }
+}
+
+int Avocat_Oficiu::maxim;
+int main(int argc, char *argv[])
+{
+    cout<<"Cate obiecte doriti sa cititi:";
+    int ob;
+    cin>>ob;
+    Avocat **evid=new Avocat*[ob];
+    int avoc=0;
+	bool *t=new bool[ob];
+	for(int i=0; i<ob;i++)
+        t[i]=1;
+	for(int i=0;i<ob;i++)
+    {
+        cout<<"Adaugati avocat(0) sau avocat din oficiu(1):";
+        int av;
+        cin>>av;
+        t[i]=av;
+        if(av==0)
+        {
+            evid[i]=new Avocat();
+            cin>>*evid[i];
+        }
+        else
+        {
+            evid[i]=new Avocat_Oficiu();
+            cin>>*dynamic_cast<Avocat_Oficiu*>(evid[i]);
+        }
+    }
+    cout<<"Alegeti 0 pentru a inchide programul."<<endl;
+    cout<<"Alegeti 1 pentru a afisa toate obiectele."<<endl;
+    cout<<"Alegeti 2 pentru a sorta obiectele de tip avocat."<<endl;
+    cout<<"Alegeti 3 pentru a afisa avocatul din oficiu cu numarul maxim de procese."<<endl;
+    while(1)
+    {
+        cout<<"Introduceti optiunea:";
+        int x;
+        cin>>x;
+        switch(x)
+        {
+            case 0:
+            {
+                return 0;
+            }
+            case 1:
+            {
+                cout<<"Doriti sa afisati toata lista(0), doar avocatii(1) sau doar avocatii din oficiu(2):";
+                int ales;
+                cin>>ales;
+                if(ales==0)
+                {
+                    for(int i=0;i<ob;i++)
+                    {
+                        evid[i]->afis();
+                        cout<<"\n";
+                    }
+                }
+                else if(ales==1)
+                {
+                    for(int i=0;i<ob;i++)
+                    {
+                        if(t[i]==0)
+                        {
+                            evid[i]->afis();
+                            cout<<"\n";
+                        }
+                    }
+                }
+                else if(ales==2)
+                {
+                    for(int i=0;i<ob;i++)
+                    {
+                        if(t[i]!=0)
+                        {
+                            evid[i]->afis();
+                            cout<<"\n";
+                        }
+                    }
+                }
+                break;
+            }
+            case 2:
+            {
+                for(int i=0;i<ob-1;i++)
+                {
+                    if(t[i]==0)
+                        for(int j=i+1;j<ob;j++)
+                        {
+                            if(t[j]==0&&(*evid[i]>*evid[j]))
+                            {
+                                Avocat *temp=evid[i];
+                                evid[i]=evid[j];
+                                evid[j]=temp;
+                            }
+                        }
+                }
+                break;
+            }
+            case 3:
+            {
+                cout<<"Avocatul cu durata maxima este:\n";
+                Avocat_Oficiu e;
+                e.maximq(evid,ob,t);
+                int q=Avocat_Oficiu::afis_maxim();
+                evid[q]->afis();
+                break;
+            }
+        }
+    }
+    for (int i=0; i<ob; i++)
+        delete [] evid[i];
+    delete [] evid;
+    delete []t;
+}
+
