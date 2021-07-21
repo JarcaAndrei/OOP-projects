@@ -1,0 +1,420 @@
+#include <iostream>
+#include <vector>
+#include <cmath>
+#include <stdlib.h>
+#include <conio.h>
+using namespace std;
+//Tema 10
+class Polinom
+{
+	private:
+	    int grad;
+		vector<double> v;
+	public:
+	   ~Polinom();
+        Polinom();
+        Polinom(const Polinom& P);
+        double calcPct(const double x)const;
+        Polinom operator+ (Polinom P)const;
+
+        Polinom operator* (Polinom)const;
+        Polinom operator- (Polinom)const;
+        vector<Polinom> add(vector <Polinom> )const;
+		Polinom addition(vector <Polinom> )const;
+		Polinom scadere(vector <Polinom> )const;
+		Polinom inmultire(vector <Polinom> )const;
+
+		void afis(vector <Polinom> )const;
+
+		friend ostream& operator<<(ostream&,const Polinom&);
+		friend istream& operator>>(istream&,Polinom&);
+};
+Polinom::Polinom()
+{
+	this->grad=0;
+	vector <double> v;
+	this->v=v;
+}
+Polinom::Polinom(const Polinom& p){
+	this->grad=p.grad;
+	this->v=p.v;
+}
+Polinom::~Polinom()
+{
+	vector <double> v;
+	this->v=v;
+	this->grad=0;
+}
+double Polinom::calcPct(const double x) const
+{
+	double a=0;
+	int gr=this->grad;
+	for(int i=0;i<=gr;i++)
+		a=a+pow(x,i)*(this->v[i]);
+	return a;
+}
+Polinom Polinom::operator+(Polinom p2)const
+{
+	Polinom tmp;
+	vector <double> x;
+	if(this->grad>p2.grad)
+		tmp.grad=this->grad;
+	else
+		tmp.grad=p2.grad;
+	if(this->grad>p2.grad)
+		for(int i=0;i<=this->grad;i++)
+		{
+			if(i<=p2.grad)
+				x.push_back(this->v[i]+p2.v[i]);
+			else
+				x.push_back(this->v[i]);
+		}
+	else
+		for(int i=0;i<=p2.grad;i++)
+		{
+			if(i<=this->grad)
+				x.push_back(this->v[i]+p2.v[i]);
+			else
+				x.push_back(p2.v[i]);
+		}
+	tmp.v=x;
+	return tmp;
+}
+Polinom Polinom::operator-(Polinom p2)const
+{
+	Polinom tmp;
+	vector <double> x;
+	int max=0;
+	if(this->grad>p2.grad)
+		for(int i=0;i<=this->grad;i++)
+		{
+			if(i<=p2.grad)
+				x.push_back(this->v[i]-p2.v[i]);
+			else
+				x.push_back(this->v[i]);
+		}
+	else
+		for(int i=0;i<=p2.grad;i++)
+		{
+			if(i<=this->grad)
+				x.push_back(this->v[i]-p2.v[i]);
+			else
+				x.push_back(-p2.v[i]);
+		}
+	tmp.v=x;
+	if(this->grad>p2.grad)
+		max=this->grad;
+	else
+		max=p2.grad;
+	if(this->grad==p2.grad)
+		for(int i=p2.grad;i>=0;i--)
+		{
+			if(x[i]!=0)
+			{
+				tmp.grad=i;
+				break;
+			}
+		}
+	else
+		tmp.grad=max;
+	return tmp;
+}
+Polinom Polinom::operator*(Polinom p2)const
+{
+	Polinom tmp;
+	vector <double> x;
+	for(int i=0;i<=(this->grad)+p2.grad;i++)
+		x.push_back(0);
+	for(int i=0;i<=this->grad;i++)
+	{
+		for(int j=0;j<=p2.grad;j++)
+		{
+			x[i+j]+=(this->v[i])*p2.v[j];
+		}
+	}
+	tmp.grad=this->grad+p2.grad;
+	tmp.v=x;
+	return tmp;
+}
+ostream& operator<<(ostream& os,const Polinom &p)
+{
+	if ( p.grad==0)
+	{
+		os<<p.v[p.grad]<<"\n";
+		return os;
+	}
+	if (p.v[p.grad]>0 &&p.v[p.grad]<1)
+		os << p.v[p.grad] << "x";
+	else if (p.v[p.grad]>1)
+		os << p.v[p.grad] << "x";
+	else if(p.v[p.grad]==-1)
+		os << '-' << "x";
+	else if (p.v[p.grad]==1)
+		os << "x";
+	else if( p.v[p.grad]<0)
+		os << p.v[p.grad] << "x";
+	if(p.grad!=1)
+		os << "^" << p.grad;
+	for(int i=p.grad-1;i>1;i--)
+		if(p.v[i]!=0 && p.v[i]!=1 && p.v[i]>0)
+			os << '+' << p.v[i] << "x^" << i;
+		else if(p.v[i]==1)
+			os << '+' << "x^" << i;
+		else if(p.v[i]==-1)
+			os << '-' << "x^" << i;
+		else if(p.v[i]<0)
+			os << p.v[i] << "x^" << i;
+	if(p.grad!=1)
+		if(p.v[1]!=1 && p.v[1]!=-1 && p.v[1]>0)
+			os << '+' << p.v[1] << 'x';
+		else if(p.v[1]==1)
+			os << '+' << 'x';
+		else if(p.v[1]==-1)
+			os << '-' << 'x';
+		else if(p.v[1]<0)
+			os << p.v[1] << 'x';
+	if(p.v[0]>0 )
+		return os << '+' << p.v[0] << "\n";
+	else if(p.v[0]<0)
+		return os << p.v[0] << "\n";
+	else
+		return os << "\n";
+}
+
+istream& operator>>(istream& is, Polinom &p)
+{
+	cout<< "\nIntroduceti gradul:";
+	is >> p.grad;
+	vector <double> x;
+	for(int i=0;i<=p.grad;i++)
+		x.push_back(0);
+	p.v=x;
+	cout << "Introduceti termenul liber:";
+	is >> p.v[0];
+	cout << "Introduceti coeficientul lui x:";
+	is >> p.v[1];
+	if(p.grad==1)
+		while(p.v[p.grad]==0)
+		{
+			cout << "Coeficientul termenului dominant nu poate fi 0\n";
+			cout << "Introduceti coeficientul lui x"<<":";
+			is >>p.v[p.grad];
+		}
+	for(int i=2;i<p.grad;i++)
+	{
+		cout << "Introduceti coeficientul lui x^"<<i<<":";
+		is >> p.v[i];
+	}
+	if(p.grad!=1)
+	{
+		cout << "Introduceti coeficientul lui x^"<<p.grad<<":";
+		is >> p.v[p.grad];
+		while(p.v[p.grad]==0)
+		{
+			cout << "Coeficientul termenului dominant nu poate fi 0\n";
+			cout << "Introduceti coeficientul lui x^"<<p.grad<<":";
+			is >>p.v[p.grad];
+		}
+	}
+	return is;
+}
+vector<Polinom> Polinom::add(vector <Polinom> p)const
+{
+    int n;
+
+    cout<<"Introduceti numarul polinoamelor adaugate:";
+    cin>>n;
+    for(int i=0; i<n; i++)
+    {
+        Polinom a;
+
+        cin>>a;
+		cout<<"Polinomul adaugat este: "<<a;
+        p.push_back(a);
+    }
+    return p;
+}
+Polinom Polinom::addition(vector <Polinom> p)const
+{
+	cout<<"Cate polinoame doriti sa adunati: ";
+	int t;
+	cin>>t;
+	Polinom temp;
+	for(int i=0;i<t;i++)
+		temp.v.push_back(0);
+	cout<<"Introduceti indicii polinoamelor pe care doriti sa le adunati(indicii>0):";
+	for(int i=0;i<t;i++)
+	{
+		int x;
+		cin>>x;
+		temp=temp+p[x-1];
+	}
+	return temp;
+}
+void Polinom::afis(vector <Polinom> p)const
+{
+	for (int i=0;i<p.size();i++)
+		cout<<p[i];
+}
+Polinom Polinom::scadere(vector <Polinom> p)const
+{
+	cout<<"Cate polinoame doriti sa scadeti: ";
+	int t;
+	cin>>t;
+	Polinom temp;
+	cout<<"Introduceti indicii polinoamelor pe care doriti sa le scadeti(indicii>0):";
+	int x;
+	cin>>x;
+	temp=p[x-1];
+	for(int i=1;i<t;i++)
+	{
+		cin>>x;
+		temp=temp-p[x-1];
+	}
+	return temp;
+}
+Polinom Polinom::inmultire(vector <Polinom> p)const
+{
+	cout<<"Cate polinoame doriti sa inmultiti:";
+	int t;
+	cin>>t;
+	Polinom temp;
+	cout<<"Introduceti indicii polinoamelor pe care doriti sa le inmultiti(indicii>0):";
+	int x;
+	cin>>x;
+	temp=p[x-1];
+	for(int i=1;i<t;i++)
+	{
+		cin>>x;
+		temp=temp*p[x-1];
+	}
+	return temp;
+}
+int main()
+{
+	vector <Polinom>  pol;
+	cout<<"Alegeti 0 pentru a reveni la meniul initial\n";
+	cout<<"Alegeti 1 pentru a citi polinomul/polinoamele\n";
+	cout<<"Alegeti 2 pentru a alege cati si care polinoame sa fie adunate\n";
+	cout<<"Alegeti 3 pentru a alege cati si care polinoame sa fie scazute\n";
+	cout<<"Alegeti 4 pentru a alege cati si care polinoame sa fie inmultite\n";
+	cout<<"Alegeti 5 pentru a calcula valoarea unuia dintre polinoamele introduse intr-un punct\n";
+	cout<<"Alegeti 6 pentru a afisa toate polinoamele\n";
+	cout<<"Alegeti 7 pentru a inchide programul\n";
+	cout<<"---Indicii polinoamelor pe care le puteti alege incep de la 1---\n";
+	int ok=0;
+	while (1)
+	{
+		cout<<"Introduceti optiunea:";
+		int x;
+		cin>>x;
+		switch(x)
+		{
+			case 0:
+			{
+				system("cls");
+				cout<<"Alegeti 0 pentru a reveni la meniul initial\n";
+				cout<<"Alegeti 1 pentru a citi polinomul/polinoamele\n";
+				cout<<"Alegeti 2 pentru a alege cati si care polinoame sa fie adunate\n";
+				cout<<"Alegeti 3 pentru a alege cati si care polinoame sa fie scazute\n";
+				cout<<"Alegeti 4 pentru a alege cati si care polinoame sa fie inmultite\n";
+				cout<<"Alegeti 5 pentru a calcula valoarea unuia dintre polinoamele introduse intr-un punct\n";
+				cout<<"Alegeti 6 pentru a afisa toate polinoamele si indicii acestora\n";
+				cout<<"Alegeti 7 pentru a inchide programul\n";
+				cout<<"---Indicii polinoamelor pe care le puteti alege incep de la 1---\n";
+				break;
+			}
+			case 1:
+			{
+				Polinom temp;
+				pol=temp.add(pol);
+				break;
+			}
+			case 2:
+			{
+				if(pol.size()>=2)
+				{
+					Polinom temp;
+					temp=temp.addition(pol);
+					cout<<temp;
+				}
+				else
+				{
+					cout<<"Aveti nevoie de cel putin doua polinoame pentru aceasta alegere\n";
+				}
+				break;
+			}
+			case 3:
+			{
+				if(pol.size()>=2)
+				{
+					Polinom temp;
+					temp=temp.scadere(pol);
+					cout<<temp;
+				}
+				else
+				{
+					cout<<"Aveti nevoie de cel putin doua polinoame pentru aceasta alegere\n";
+				}
+				break;
+			}
+			case 4:
+			{
+				if(pol.size()>=2)
+				{
+					Polinom temp;
+					temp=temp.inmultire(pol);
+					cout<<temp;
+				}
+				else
+				{
+					cout<<"Aveti nevoie de cel putin doua polinoame pentru aceasta alegere\n";
+				}
+				break;
+			}
+			case 5:
+			{
+				if(pol.size()>=1)
+				{
+					cout<<"Introduceti valoarea in care doriti sa calculati polinomul: ";
+					double q;
+					cin>>q;
+					cout<<"Introduceti indicele polinomului pentru care doriti sa faceti calculul: ";
+					int tem;
+					cin>>tem;
+					while(tem<0)
+					{
+						cout<<"Indicele trebuie sa fie pozitiv si intreg\n";
+						cout<<"Introduceti indicele polinomului pentru care doriti sa faceti calculul: ";
+						cin>>tem;
+					}
+					cout<<pol[tem-1].calcPct(q)<<"\n";
+				}
+				else
+				{
+					cout<<"Nu ati adaugat niciun polinom\n";
+				}
+				break;
+			}
+			case 6:
+			{
+				if(pol.size()>=1)
+				{
+					Polinom temp;
+					temp.afis(pol);
+				}
+				else
+				{
+					cout<<"Nu ati adaugat niciun polinom\n";
+				}
+				break;
+			}
+			case 7:
+			{
+				return 0;
+				break;
+			}
+		}
+	}
+}
+
