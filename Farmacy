@@ -1,0 +1,311 @@
+#include <iostream>
+#include <vector>
+#include <tuple>
+#include <stdlib.h>
+using namespace std;
+
+vector<tuple<string,int,int>>gest;
+class Farmacie_Baza
+{
+    int id_farmacie;
+    public:
+        Farmacie_Baza(){}
+        virtual ~Farmacie_Baza(){}
+        Farmacie_Baza(int a){id_farmacie=a;}
+        Farmacie_Baza(const Farmacie_Baza&f):id_farmacie(f.id_farmacie){}
+        int getId()
+        {
+            return id_farmacie;
+        }
+        friend ostream& operator<<(ostream&os,const Farmacie_Baza&f)
+        {
+            f.afis(os);
+            return os;
+        }
+        friend istream& operator>>(istream&is,Farmacie_Baza&f)
+        {
+            f.cit(is);
+            return is;
+        }
+        virtual void afis(ostream&os)const
+        {
+            os<<"Id:"<<id_farmacie<<"\n";
+        }
+        virtual void cit(istream&is)
+        {
+            cout<<"Id:";
+            is>>id_farmacie;
+        }
+};
+class Farmacie_fizica:public Farmacie_Baza
+{
+    string denumire;
+    int angajati;
+    vector<int>profit;
+    public:
+        Farmacie_fizica(){}
+        Farmacie_fizica(int a,string b, int c, vector<int>d):Farmacie_Baza(a)
+        {
+            this->denumire=b;this->angajati=c;
+            for(int i=0;i<d.size();i++)
+                profit.push_back(d[i]);
+        }
+        Farmacie_fizica(const Farmacie_fizica&f):Farmacie_Baza(f),denumire(f.denumire),angajati(f.angajati)
+        {
+            for(int i=0;i<f.profit.size();i++)
+                this->profit.push_back(f.profit[i]);
+        }
+        virtual ~Farmacie_fizica(){vector<int>profit=vector<int>();}
+
+		friend ostream& operator<<(ostream&,const Farmacie_fizica&);
+		friend istream& operator>>(istream&,Farmacie_fizica&);
+		Farmacie_fizica&operator=(const Farmacie_fizica&p)
+		{
+		    (Farmacie_Baza&)(*this)=p;
+		    denumire=p.denumire;
+		    angajati=p.angajati;
+		    profit=p.profit;
+		    return *this;
+		}
+		virtual void afis(ostream &os)const override
+		{
+		    Farmacie_Baza::afis(os);
+		    cout<<"Denumire:"<<denumire;
+		    cout<<"\nAngajati:"<<angajati;
+		    cout<<"\nProfit:";
+            for(int i=0;i<12;i++)
+                cout<<profit[i]<<" ";
+            cout<<"\n";
+		}
+		virtual void cit(istream &is)override
+		{
+		    Farmacie_Baza::cit(is);
+		    cout<<"Denumire:";
+		    cin>>denumire;
+		    cout<<"Angajati:";
+		    cin>>angajati;
+            for(int i=0;i<12;i++)
+            {
+                cout<<"Profit pe luna "<<i+1<<":";
+                int x;
+                cin>>x;
+                this->profit.push_back(x);
+            }
+            cout<<"\n";
+		}
+};
+ostream& operator<<(ostream&os,const Farmacie_fizica&f)
+{
+    f.afis(os);
+    return os;
+}
+istream& operator>>(istream&is,Farmacie_fizica&f)
+{
+    f.cit(is);
+    return is;
+}
+class Farmacie_online:public Farmacie_Baza
+{
+    string web;
+    int nr_vizitatori;
+    int discount;
+    public:
+        Farmacie_online(){}
+        Farmacie_online(int id,string b,int c, int d):Farmacie_Baza(id){this->web=b;this->nr_vizitatori=c;this->discount=d;}
+        Farmacie_online(const Farmacie_online&f):Farmacie_Baza(f),web(f.web),nr_vizitatori(f.nr_vizitatori),discount(f.discount){}
+        string getWeb()const{return web;}
+        int getNr()const{return nr_vizitatori;}
+        int getDisc()const{return discount;}
+        friend ostream& operator<<(ostream&,const Farmacie_online&);
+		friend istream& operator>>(istream&,Farmacie_online&);
+		Farmacie_online&operator=(const Farmacie_online&p)
+		{
+		    (Farmacie_Baza&)(*this)=p;
+		    web=p.web;
+		    nr_vizitatori=p.nr_vizitatori;
+		    discount=p.discount;
+		    return *this;
+		}
+		virtual ~Farmacie_online(){}
+		virtual void afis(ostream &os)const override
+		{
+		    Farmacie_Baza::afis(os);
+		    cout<<"Web:"<<web;
+		    cout<<"\nNr vizitatori:"<<nr_vizitatori;
+		    cout<<"\nDiscount:"<<discount;
+		}
+		virtual void cit(istream &is)
+		{
+		    Farmacie_Baza::cit(is);
+		    cout<<"Web:";
+		    cin>>web;
+		    cout<<"Nr vizitatori:";
+		    cin>>nr_vizitatori;
+		    cout<<"Discount:";
+		    cin>>discount;
+            gest.push_back(make_tuple(this->web, this->nr_vizitatori, this->discount));
+		}
+
+};
+ostream& operator<<(ostream&os,const Farmacie_online&f)
+{
+    f.afis(os);
+    return os;
+}
+istream& operator>>(istream&is,Farmacie_online&f)
+{
+    f.cit(is);
+    return is;
+}
+template <typename T>
+class GestionareFarmacii
+{
+    static int index;
+    const int id=25;
+    //T* date;
+    vector <const T*> date;
+    public:
+        GestionareFarmacii(){}
+        GestionareFarmacii<T>& operator+=(const Farmacie_online &t)
+        {
+            this->date.push_back(&t);
+            index++;
+            return *this;
+        }
+        void add (const T&);
+        void print()
+        {
+            for(int i=0;i<index;i++)
+                cout<<*date[i]<<endl;
+            //cout<<get<0>(this->date[index-1]);
+            //cout<<this->date[index-1].getWeb();
+        }
+        void remoob()
+        {
+            for(int i=0;i<date.size();i++)
+                delete date[i];
+        }
+        virtual ~GestionareFarmacii()
+        {
+        }
+        static int getIndex()
+        {
+            return index;
+        }
+        template <typename U>
+        friend ostream& operator << (ostream&, GestionareFarmacii<U>);
+        void start()
+        {
+            int n;
+            cout<<"Introduceti n:";
+            cin>>n;
+            for (int i=0; i<n; i++)
+            {
+                int cc=0;
+                cout<<"Pentru farmacie_fizica introduceti 1, farmacie_online 0:";
+                cin>>cc;
+                if(cc==1){
+                    Farmacie_fizica* ff = new Farmacie_fizica();
+                    cin>>*dynamic_cast<Farmacie_fizica*>(ff);
+                    this->add(*ff);
+                }
+                else
+                    if(cc == 0){
+                        Farmacie_online* fo=new Farmacie_online();
+                        cin>>*dynamic_cast<Farmacie_online*>(fo);
+                        (*this)+=(*fo);
+                    }
+            }
+
+    }
+
+};
+template <typename T>
+int GestionareFarmacii<T>::index=0;
+
+template <typename T>
+ostream& operator << (ostream& out, GestionareFarmacii<T> f)
+{
+    f.print();
+    return out;
+}
+
+template <typename T>
+void GestionareFarmacii<T>:: add(const T &f)
+{
+    try
+    {
+        if (typeid(f).name() == typeid(Farmacie_online).name())
+            throw 2.2;
+        this->date.push_back(&f);
+        index++;
+    }
+    catch (double x)
+    {
+        cout << "Doar la farmacii fizice functioneaza";
+    }
+}
+template<typename T>
+class Gestionare:public GestionareFarmacii<T>
+{
+
+};
+template <>
+class GestionareFarmacii<Farmacie_online>
+{
+    int nr_vizitatori;
+    public:
+        virtual ~GestionareFarmacii<Farmacie_online>(){}
+        GestionareFarmacii<Farmacie_online>()
+        {
+            nr_vizitatori=0;
+            for (int i=0;i<gest.size();i++)
+            {
+                nr_vizitatori+=get<1>(gest[i]);
+            }
+        }
+        GestionareFarmacii<Farmacie_online>&operator +=(const Farmacie_online&f)
+        {
+            this->nr_vizitatori+=f.getNr();
+            return *this;
+        }
+        GestionareFarmacii<Farmacie_online>(int a):nr_vizitatori(a){}
+        int getNr_vizitatori()const{return nr_vizitatori;}
+
+
+};
+int main()
+{
+    GestionareFarmacii<Farmacie_Baza>x;
+    x.start();
+    GestionareFarmacii<Farmacie_online>gg;
+    cout<<"0 pentru a inchide";
+    cout<<"\n1 pentru a afisa toate farmaciile";
+    cout<<"\n2 pentru a afisa numarul total de vizualizari din farmaciile online";
+    while(1)
+    {
+        cout<<"\nAlegeti optiunea:\n";
+        int op;
+        cin>>op;
+        switch(op)
+        {
+            case 0:
+            {
+                x.remoob();
+                return 0;
+                break;
+            }
+            case 1:
+            {
+                cout<<x;
+                break;
+            }
+            case 2:
+            {
+                cout<<gg.getNr_vizitatori();
+                break;
+            }
+        }
+    }
+
+}
